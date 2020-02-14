@@ -8,16 +8,12 @@
 
 import Foundation
 
-//struct Pokemon: Codable {
-//    let count: Int
-//    let results: [PokeResult]
-//}
-//
-//// MARK: - Result
-//struct PokeResult: Codable {
-//    let name: String
-//    let url: String
-//}
+
+struct PokemonProfile: Codable {
+    var id: Int
+    var name: String
+    var imageData: Data
+}
 
 struct Pokemon: Codable {
     
@@ -27,6 +23,12 @@ struct Pokemon: Codable {
     let sprites: Sprites
     let types: [TypeElement]
     let weight: Int
+}
+
+extension Pokemon: Equatable {
+    static func == (lhs: Pokemon, rhs: Pokemon) -> Bool {
+        return lhs.id != rhs.id
+    }
 }
 
 // MARK: - Ability

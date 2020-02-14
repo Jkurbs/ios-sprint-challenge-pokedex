@@ -15,69 +15,73 @@ enum NetworkError: Error {
     case decoderError
 }
 
-enum Endpoint: String {
-    case Pokemon
-    case Ability
-}
-
-
 class PokeController {
     
     var baseURL = URL(string: "https://pokeapi.co/api/v2")
     
-    var pokemon: [Pokemon] = []
+    var pokemons: [PokemonProfile] = []
+    let radQueue = OperationQueue()
     
-    var object = Endpoint.Pokemon
-        
-//    func searchPokemon(name: String, completion:@escaping (Result<Pokemon, NetworkError>) -> Void) {
-//        search(endpoint: Endpoint.Pokemon.rawValue, name: name) { (result) in
-//            if let pokemon = try? result.get() as? Pokemon {
-//                self.search(endpoint: Endpoint.Ability.rawValue, data: Ability.self, name: pokemon.name) { (result) in
-//                    if let ability = try? result.get() as? Ability {
-//                        var pokemon = pokemon
-//                        pokemon.abilities = ability
-//                        self.pokemon.append(pokemon)
-//                        completion(.success(pokemon))
-//                    }
-//                }
-//            }
-//        }
-//    }
     
-    func searchPokemon(name: String?, completion:@escaping (Result<Pokemon, NetworkError>) -> Void) {
+    func loadPokemons(completion:@escaping (Result<Pokemon, NetworkError>) -> Void) {
         
-        guard let url = baseURL, let name = name else  {
-            completion(.failure(.badURL))
-            return
-        }
-        
-        let endpoint = url.appendingPathComponent("pokemon")
-        let queryURL = endpoint.appendingPathComponent(name)
-        
-        let request = URLRequest(url: queryURL)
-        
-        URLSession.shared.dataTask(with: request) { (data, response, error) in
-            if let error = error {
-                NSLog("Error with URL Session: \(error)")
-                completion(.failure(.networkError))
+        var id = 0
+        for _ in 1...20 {
+            id += 1
+            guard let url = baseURL else {
+                completion(.failure(.badURL))
                 return
             }
             
-            guard let data = data else {
-                NSLog("Data is not returning")
-                completion(.failure(.noData))
-                return
-            }
-                
-            let decoder = JSONDecoder()
-
-            do {
-                let decodedData = try decoder.decode(Pokemon.self, from: data)
-                completion(.success(decodedData))
-            } catch {
-                NSLog("Error decoding data: \(error.localizedDescription)")
-                completion(.failure(.decoderError))
-            }
-        }.resume()
+            let endpoint = url.appendingPathComponent("pokemon")
+            let idEndpoint = endpoint.appendingPathComponent(String(id))
+            let request = URLRequest(url: idEndpoint)
+            URLSession.shared.dataTask(with: request) { (data, _, error) in
+                if let error = error {
+                    NSLog("Error with URL Session: \(error)")
+                    completion(.failure(.networkError))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(.noData))
+                    return
+                }
+                let decoder = JSONDecoder()
+                do {
+                    let pokemonData = try decoder.decode(Pokemon.self, from: data)
+                    completion(.success(pokemonData))
+                } catch {
+                    completion(.failure(.decoderError))
+                }
+            }.resume()
+        }
+    }
+    
+    func loadImage(url: String, completion:@escaping (Result<Data, NetworkError>) -> Void) {
+        if let url = URL(string: url) {
+            let request = URLRequest(url: url)
+            URLSession.shared.dataTask(with: request) { (data, _, error) in
+                if let error = error {
+                    NSLog("Error with URL Session: \(error)")
+                    return
+                }
+                guard let data = data else {
+                    return
+                }
+                completion(.success(data))
+            }.resume()
+        }
+    }
+    
+    
+    // MARK: - CollectionView Data helper
+    
+    var itemCount: Int {
+        let count = pokemons.count
+        return count
+    }
+    
+    func item(at: Int) -> PokemonProfile? {
+        return pokemons.sorted(by: {$0.id > $1.id})[at]
     }
 }
