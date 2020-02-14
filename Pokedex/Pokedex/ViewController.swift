@@ -18,7 +18,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var abilitiesLabel: UILabel!
     
     
-    var controller: PokeController!
+    var controller: PokeController?
     
     var pokemon: Pokemon? {
         didSet {
@@ -34,11 +34,13 @@ class ViewController: UIViewController {
     }
     
     func searchPokemon() {
-        if let name = searchField.text {
-            controller.searchPokemon(name: name) { (result) in
+        if let name = searchField.text, let controller = controller {
+            
+            controller.search(name: name) { (result) in
                 if let pokemon = try? result.get() {
                     DispatchQueue.main.async {
                         self.pokemon = pokemon
+                        controller.pokemon.append(pokemon)
                     }
                 }
             }
@@ -47,7 +49,7 @@ class ViewController: UIViewController {
     
     func updateViews() {
         guard let pokemon = pokemon else {return}
-        self.idLabel.text = "\(pokemon.id)"
+//        self.idLabel.text = "\(pokemon.id)"
 //        print("abilities: \(pokemon.abilities.count)")
     }
 }

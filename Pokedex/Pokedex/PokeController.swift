@@ -15,11 +15,34 @@ enum NetworkError: Error {
     case decoderError
 }
 
+enum Endpoint: String {
+    case Pokemon
+    case Ability
+}
+
+
 class PokeController {
     
     var baseURL = URL(string: "https://pokeapi.co/api/v2")
     
     var pokemon: [Pokemon] = []
+    
+    var object = Endpoint.Pokemon
+        
+//    func searchPokemon(name: String, completion:@escaping (Result<Pokemon, NetworkError>) -> Void) {
+//        search(endpoint: Endpoint.Pokemon.rawValue, name: name) { (result) in
+//            if let pokemon = try? result.get() as? Pokemon {
+//                self.search(endpoint: Endpoint.Ability.rawValue, data: Ability.self, name: pokemon.name) { (result) in
+//                    if let ability = try? result.get() as? Ability {
+//                        var pokemon = pokemon
+//                        pokemon.abilities = ability
+//                        self.pokemon.append(pokemon)
+//                        completion(.success(pokemon))
+//                    }
+//                }
+//            }
+//        }
+//    }
     
     func searchPokemon(name: String?, completion:@escaping (Result<Pokemon, NetworkError>) -> Void) {
         
@@ -45,12 +68,11 @@ class PokeController {
                 completion(.failure(.noData))
                 return
             }
-            
+                
             let decoder = JSONDecoder()
-            
+
             do {
                 let decodedData = try decoder.decode(Pokemon.self, from: data)
-                self.pokemon.append(decodedData)
                 completion(.success(decodedData))
             } catch {
                 NSLog("Error decoding data: \(error.localizedDescription)")
