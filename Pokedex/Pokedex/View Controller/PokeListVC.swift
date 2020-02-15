@@ -111,28 +111,22 @@ extension PokeListVC: UISearchResultsUpdating {
     func filterSearchController(_ searchBar: UISearchBar) {
         
         
-//        guard let scopeString = searchBar.scopeButtonTitles?[searchBar.selectedScopeButtonIndex] else { return }
-//        let selectedElement = Pokemon.Element(rawValue: scopeString) ?? .All
-//        let searchText = searchBar.text ?? ""
-//        // filter pokemonList by element and text
-//        filteredPokemonList = pokemonList.filter { pokemon in
-//        let isElementMatching = (selectedElement == .All) || (pokemon.element == selectedElement)
-//        let isMatchingSearchText = pokemon.name.lowercaseString.containsString(searchText.lowercaseString) || searchText.lowercaseString.characters.count == 0
-//        return isElementMatching && isMatchingSearchText
-//        }
-//        tableView.reloadData()
-//        
-//        
-//        
-//        
-        
-        
+        guard let scopeString = searchBar.scopeButtonTitles?[searchBar.selectedScopeButtonIndex] else { return }
         
         let searchText = searchBar.text ?? ""
-        controller.filteredPok = controller.pokemons.filter { pokemon in
-            let isMatchingSearchText =  pokemon.name.lowercased().contains(searchText.lowercased()) || searchText.lowercased().count == 0
-            return isMatchingSearchText
+        if scopeString == "Name" {
+            controller.filteredPok = controller.pokemons.filter { pokemon in
+                       let isMatchingSearchText =  pokemon.name.lowercased().contains(searchText.lowercased()) || searchText.lowercased().count == 0
+                       return isMatchingSearchText
+            }
+        } else {
+            controller.filteredPok = controller.pokemons.filter { pokemon in
+                let id = String(pokemon.id)
+                let isMatchingSearchText =  id.contains(searchText) || searchText.count == 0
+                return isMatchingSearchText
+            }
         }
+       
         tableView.reloadData()
     }
 }
